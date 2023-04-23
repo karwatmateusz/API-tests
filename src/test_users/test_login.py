@@ -5,20 +5,15 @@ import jsonschema
 
 
 class TestUserLogin:
-
     login_successfull_schema = {
         "type": "object",
-        "properties": {
-            "token": {"type": "string"}
-        },
-        "required": ["token"]
+        "properties": {"token": {"type": "string"}},
+        "required": ["token"],
     }
     login_failed_schema = {
         "type": "object",
-        "properties": {
-            "error": {"type": "string"}
-        },
-        "required": ["error"]
+        "properties": {"error": {"type": "string"}},
+        "required": ["error"],
     }
 
     def setup_method(self):
@@ -68,7 +63,9 @@ class TestUserLogin:
         response = requests.post(
             url=self.login_endpoint, headers=self.header, json=valid_user_payload
         )
-        jsonschema.validate(instance=response.json(), schema=self.login_successfull_schema)
+        jsonschema.validate(
+            instance=response.json(), schema=self.login_successfull_schema
+        )
 
     @pytest.mark.login_schema
     def test_user_login_failed_has_expected_schema(self, invalid_user_payload):
