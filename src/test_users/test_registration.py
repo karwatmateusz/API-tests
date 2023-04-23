@@ -1,9 +1,28 @@
 import pytest
 import requests
 from json import dumps
+import jsonschema
 
 
 class TestUserRegistration:
+
+    registration_successfull_schema = {
+        "type": "object",
+        "properties": {
+            "id": {"type": "integer"},
+            "token": {"type": "string"},
+        },
+        "required": ["id", "token"]
+    }
+    
+    registration_failed_schema = {
+        "type": "object",
+        "properties": {
+            "error": {"type": "string"}
+        },
+        "required": ["error"]
+    }
+
     def setup_method(self):
         self.base_api_url = "https://reqres.in/api"
         self.registration_endpoint = f"{self.base_api_url}/register"
@@ -49,3 +68,17 @@ class TestUserRegistration:
         assert response.status_code == 400
         error_message = response.json()["error"]
         assert "Only defined users succeed registration" in error_message
+
+    @pytest.mark.login_schema
+    def test_user_registration_successfull_has_expected_schema(self, valid_user_payload):
+        response = requests.post(
+            url=self.registration_endpoint, headers=self.header, json=valid_user_payload
+        )
+        jsonschema.validate(instance=response.json(), schema=self.registration_successfull_schema)
+
+    @pytest.mark.login_schema
+    def test_user_registration_failed_has_expected_schema(self, invalid_user_payload):
+        response = requests.post(
+            url=self.registration_endpoint, headers=self.header, json=invalid_user_payload
+        )
+        jsonschema.validate(instance=response.json(), schema=self.registration_failed_schema)
